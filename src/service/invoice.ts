@@ -1,6 +1,11 @@
 import { sleep } from "../util/retry";
 import { ZohoApiClient } from "../client/client";
-import { Invoice, CreateInvoice, ListInvoice } from "../types/invoice";
+import {
+    Invoice,
+    CreateInvoice,
+    ListInvoice,
+    EmailInvoiceRequest,
+} from "../types/invoice";
 import { lastModifiedDateFormat } from "../util/format";
 
 /**
@@ -86,7 +91,7 @@ export class InvoiceHandler {
             invoices.push(...res.invoices);
             if (!res.page_context) continue;
             hasMorePages = res.page_context?.has_more_page ?? false;
-            page = res.page_context.page + 1 ?? 0 + 1;
+            page = (res.page_context?.page ?? 0) + 1;
             /**
              * Sleep to not get blocked by Zoho
              */
@@ -178,5 +183,37 @@ export class InvoiceHandler {
                 body: `invoice_ids=${encodeURIComponent(chunk.join(","))}`,
             });
         }
+    }
+
+    /**
+     * Email an invoice to the customer.
+     *
+     * Zoho API: POST /invoices/{invoice_id}/email
+     *
+     * If no email payload is provided, Zoho will send using the default content.
+     */
+    public async sentEmail(
+        invoiceId: string,
+        email?: Partial<EmailInvoiceRequest>,
+        opts?: {
+            sendCustomerStatement?: boolean;
+            sendAttachment?: boolean;
+        },
+    ): Promise<void> {
+        const hasEmailPayload =
+            !!email && Object.keys(email).length > 0 && email !== undefined;
+
+        await this.client.post({
+            path: ["invoices", invoiceId, "email"],
+            params: {
+                ...(opts?.sendCustomerStatement !== undefined
+                    ? { send_customer_statement: opts.sendCustomerStatement }
+                    : {}),
+                ...(opts?.sendAttachment !== undefined
+                    ? { send_attachment: opts.sendAttachment }
+                    : {}),
+            },
+            body: hasEmailPayload ? email : undefined,
+        });
     }
 }

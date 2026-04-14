@@ -265,3 +265,26 @@ export type ListInvoice = Pick<
     | "total"
 > &
     CustomFieldsDirectAPIResponse;
+
+export type EmailInvoiceRequest = {
+    /**
+     * Boolean to trigger the email from the organization's email address.
+     */
+    send_from_org_email_id?: boolean;
+    /**
+     * Array of email addresses of the recipients.
+     */
+    to_mail_ids: string[];
+    /**
+     * Array of email addresses of the recipients to be CC'd.
+     */
+    cc_mail_ids?: string[];
+    /**
+     * The subject of the mail.
+     */
+    subject?: string;
+    /**
+     * The body/content of the mail.
+     */
+    body?: string;
+};

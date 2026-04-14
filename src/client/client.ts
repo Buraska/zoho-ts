@@ -153,7 +153,7 @@ export class ZohoApiClient {
             },
             timeout: 30_000,
         });
-        this.apiFlavour = config.apiFlavour || "inventory";
+        this.apiFlavour = config.apiFlavour || "invoice";
     }
 
     /**
